@@ -58,8 +58,9 @@ function Filters() {
 }
 
 //Ce composant affiche un item dans la liste
-function Item({ id, content, done }) {
+function Item({ id, content, done, onCheck }) {
   //on récupère les propriétés de chaque item dans items
+  const toggleCheck = (e) => onCheck(id, e.target.checked); //on récupère la valeur de l'élément coché à partir de e.target.checked
   return (
     <li className="list-group-item">
       <input
@@ -67,6 +68,7 @@ function Item({ id, content, done }) {
         type="checkbox"
         aria-label="..."
         checked={done}
+        onChange={toggleCheck}
       />
       {/* on vérifie si la tâche est faite avec checked={done} */}
       <span className="mx-3">{content}</span>
@@ -75,14 +77,16 @@ function Item({ id, content, done }) {
   );
 }
 
-function List({ items }) {
-  //La liste des objets est un composant affichant une liste de compostants "Item"
+//La liste des objets est un composant affichant une liste de compostants "Item"
+function List({ items, onCheck }) {
+  //les fonctions de changement d'état sont passée en prop
+  //on transmet d'abord onCheck au composant le plus élevé, puis aux composants qui en découlent (Item)
   return (
     <ul className="list-group">
       {/* liste non-ordonnée */}
       {items.map((item) => (
         //on fait correspondre le prop items...
-        <Item {...item} /> //... et on le destructure
+        <Item {...item} onCheck={onCheck} /> //... et on le destructure
       ))}
     </ul>
   );
@@ -95,6 +99,7 @@ function App() {
     { id: 1, content: "pay bills", done: false },
     { id: 2, content: "learn React", done: false },
   ]);
+  const [all, setAll] = useState(items);
 
   //Fonctions de changement d'état
   const handleOnChange = (e) => setInput(e.target.value);
@@ -108,11 +113,21 @@ function App() {
     setItems([{ id: uuid(), content: input, done: false }, ...items]); // le nouvel objet sera en haut de la liste, son id est généré par uuid, son contenu est celui de l'input et done est false par défaut
     setInput(null); //le formulaire est vidé après envoi
   };
+  const handleOnCheck = (id, bool) => {
+    //n'aura lieu qu'en cas de case cochée
+    const updated = items.map((item) =>
+      item.id === id ? { ...item, done: bool } : item
+    );
+    //Pour chaque élément on retourne un tableau avec les éléments transformés.
+    //On compare l'id de l'item avec l'id transmit en paramètre, si oui la valeur booléenne est mise à jour, sinon on renvoi l'item
+    setItems(updated);
+    setAll(updated);
+  };
   return (
     <Container title="Gestionnaire de tâches">
       <Form onChange={handleOnChange} onSubmit={handleOnSubmit} />
       <Filters />
-      <List items={items} />
+      <List items={items} onCheck={handleOnCheck} />
     </Container>
   );
 }
