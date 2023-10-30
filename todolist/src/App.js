@@ -59,6 +59,7 @@ function Filters() {
 
 //Ce composant affiche un item dans la liste
 function Item({ id, content, done, onCheck }) {
+  const isDone = done ? "mx-3 item-done" : "mx-3"; //si done = true, isDone sera égal aux classes "mx-3 item-done" sinon seulement à "mx-3"
   //on récupère les propriétés de chaque item dans items
   const toggleCheck = (e) => onCheck(id, e.target.checked); //on récupère la valeur de l'élément coché à partir de e.target.checked
   return (
@@ -71,7 +72,7 @@ function Item({ id, content, done, onCheck }) {
         onChange={toggleCheck}
       />
       {/* on vérifie si la tâche est faite avec checked={done} */}
-      <span className="mx-3">{content}</span>
+      <span className={isDone}>{content}</span>
       {/* ici on a le contenu */}
     </li>
   );
@@ -86,7 +87,7 @@ function List({ items, onCheck }) {
       {/* liste non-ordonnée */}
       {items.map((item) => (
         //on fait correspondre le prop items...
-        <Item {...item} onCheck={onCheck} /> //... et on le destructure
+        <Item key={item.id} {...item} onCheck={onCheck} /> //... et on le destructure
       ))}
     </ul>
   );
