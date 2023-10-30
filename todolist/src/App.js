@@ -1,5 +1,9 @@
+import "bootstrap/dist/css/bootstrap.css";
+//npm install bootstrap
 import { useState } from "react";
 import "./App.css";
+import { v4 as uuid } from "uuid";
+//on a installé uuid qui génère une suite de chiffres et lettres pour créer un id unique
 
 const Container = ({ children, title }) => {
   return (
@@ -18,26 +22,28 @@ const Container = ({ children, title }) => {
   );
 };
 
-function Form() {
-  //Le formulaire est maintenant un composant
+//Le formulaire est maintenant un composant
+function Form({ onSubmit, onChange }) {
+  //les fonctions de changement d'état sont passée en prop
   return (
-    <form className="input-group mb-3">
-      {/* le formulaire contient un input et un bouton "Ajouter" */}
+    <form className="input-group mb-3" onSubmit={onSubmit}>
+      {/* le formulaire contient un input et un bouton "Ajouter", onSubmit se gère dans le form */}
       <input
         type="text"
         className="form-control form-control-lg mx-0"
         placeholder="Add new..."
         style={{ height: "max-content" }}
+        onChange={onChange} // onChange se gère dans l'input
       />
-      <button type="button" className="btn btn-info">
+      <button type="submit" className="btn btn-info">
         Ajouter
       </button>
     </form>
   );
 }
 
+//Ce composant permet d'afficher les différents filtres
 function Filters() {
-  //Ce composant permet d'afficher les différents filtres
   return (
     <div className="d-flex justify-content-end align-items-center my-3 ">
       <select className="select form-select form-control form-control-sm">
@@ -51,9 +57,9 @@ function Filters() {
   );
 }
 
-//on récupère les propriétés de chaque item dans items
+//Ce composant affiche un item dans la liste
 function Item({ id, content, done }) {
-  //Ce composant affiche un item dans la liste
+  //on récupère les propriétés de chaque item dans items
   return (
     <li className="list-group-item">
       <input
@@ -83,13 +89,28 @@ function List({ items }) {
 }
 
 function App() {
-  const [items] = useState([
+  const [input, setInput] = useState(null); //cet état sert a récupérer la valeur du formulaire
+  const [items, setItems] = useState([
+    //setItems permet de mettre à jour la liste
     { id: 1, content: "pay bills", done: false },
     { id: 2, content: "learn React", done: false },
   ]);
+
+  //Fonctions de changement d'état
+  const handleOnChange = (e) => setInput(e.target.value);
+  const handleOnSubmit = (e) => {
+    //quand le formulaire est éxécuté ...
+    e.preventDefault(); //On ne réactualise pas l'appli
+    if (!input) {
+      //Si l'input est vide, le formulaire ne retourne rien
+      return false;
+    }
+    setItems([{ id: uuid(), content: input, done: false }, ...items]); // le nouvel objet sera en haut de la liste, son id est généré par uuid, son contenu est celui de l'input et done est false par défaut
+    setInput(null); //le formulaire est vidé après envoi
+  };
   return (
     <Container title="Gestionnaire de tâches">
-      <Form />
+      <Form onChange={handleOnChange} onSubmit={handleOnSubmit} />
       <Filters />
       <List items={items} />
     </Container>
