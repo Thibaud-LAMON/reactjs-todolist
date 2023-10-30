@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.css";
 //npm install bootstrap
-import { useState } from "react";
+import { useState, useRef, useMemo, forwardRef } from "react";
 import "./App.css";
 import { v4 as uuid } from "uuid";
 //on a installé uuid qui génère une suite de chiffres et lettres pour créer un id unique
@@ -23,12 +23,15 @@ const Container = ({ children, title }) => {
 };
 
 //Le formulaire est maintenant un composant
-function Form({ onSubmit, onChange }) {
+// on passe à une fonction fléchée
+const Form = forwardRef(({ onSubmit, onChange }, ref) => {
   //les fonctions de changement d'état sont passée en prop
+  //forwardRef permet de transmettre à un composant enfant cette référence
   return (
     <form className="input-group mb-3" onSubmit={onSubmit}>
       {/* le formulaire contient un input et un bouton "Ajouter", onSubmit se gère dans le form */}
       <input
+        ref={ref}
         type="text"
         className="form-control form-control-lg mx-0"
         placeholder="Add new..."
@@ -40,7 +43,7 @@ function Form({ onSubmit, onChange }) {
       </button>
     </form>
   );
-}
+});
 
 //Ce composant permet d'afficher les différents filtres
 function Filters() {
@@ -94,6 +97,7 @@ function List({ items, onCheck }) {
 }
 
 function App() {
+  const ref = useRef(); //on créer une ref pour accéder au noeud du DOM
   const [input, setInput] = useState(null); //cet état sert a récupérer la valeur du formulaire
   const [items, setItems] = useState([
     //setItems permet de mettre à jour la liste
@@ -113,6 +117,7 @@ function App() {
     }
     setItems([{ id: uuid(), content: input, done: false }, ...items]); // le nouvel objet sera en haut de la liste, son id est généré par uuid, son contenu est celui de l'input et done est false par défaut
     setInput(null); //le formulaire est vidé après envoi
+    ref.current.value = null; //supprime la valeur après l'envoi du formulaire
   };
   const handleOnCheck = (id, bool) => {
     //n'aura lieu qu'en cas de case cochée
@@ -126,7 +131,7 @@ function App() {
   };
   return (
     <Container title="Gestionnaire de tâches">
-      <Form onChange={handleOnChange} onSubmit={handleOnSubmit} />
+      <Form ref={ref} onChange={handleOnChange} onSubmit={handleOnSubmit} />
       <Filters />
       <List items={items} onCheck={handleOnCheck} />
     </Container>
