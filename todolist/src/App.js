@@ -46,15 +46,22 @@ const Form = forwardRef(({ onSubmit, onChange }, ref) => {
 });
 
 //Ce composant permet d'afficher les différents filtres
-function Filters() {
+function Filters({ onSelect }) {
+  const options = ["All", "Completed"]; //liste des filtres
+  const select = (e) => onSelect(e.target.value); //on récupère la valeur de l'option
   return (
     <div className="d-flex justify-content-end align-items-center my-3 ">
-      <select className="select form-select form-control form-control-sm">
-        {/* liste de filtres */}
-        <option value="1">All</option>
-        <option value="2">Completed</option>
-        <option value="3">Active</option>
-        <option value="4">Has due date</option>
+      <select
+        onChange={select}
+        className="select form-select form-control form-control-sm"
+      >
+        {options.map(
+          (
+            option //afficher la liste des filtres
+          ) => (
+            <option value={option}>{option}</option>
+          )
+        )}
       </select>
     </div>
   );
@@ -111,13 +118,17 @@ function App() {
   const handleOnSubmit = (e) => {
     //quand le formulaire est éxécuté ...
     e.preventDefault(); //On ne réactualise pas l'appli
-    if (!input) {
+    /*if (!input) {
       //Si l'input est vide, le formulaire ne retourne rien
       return false;
+    }*/
+    //s'il y a une valeur pour l'input
+    if (isValid) {
+      setItems([{ id: uuid(), content: input, done: false }, ...items]); // le nouvel objet sera en haut de la liste, son id est généré par uuid, son contenu est celui de l'input et done est false par défaut
+      setAll([{ id: uuid(), content: input, done: false }, ...items]);
+      setInput(null); //le formulaire est vidé après envoi
+      ref.current.value = null; //supprime la valeur après l'envoi du formulaire
     }
-    setItems([{ id: uuid(), content: input, done: false }, ...items]); // le nouvel objet sera en haut de la liste, son id est généré par uuid, son contenu est celui de l'input et done est false par défaut
-    setInput(null); //le formulaire est vidé après envoi
-    ref.current.value = null; //supprime la valeur après l'envoi du formulaire
   };
   const handleOnCheck = (id, bool) => {
     //n'aura lieu qu'en cas de case cochée
@@ -129,10 +140,16 @@ function App() {
     setItems(updated);
     setAll(updated);
   };
+  const handleOnSelect = (option) => {
+    const filtered = items.filter((item) => !!item.done); //renvoie les item qui ont le statut done
+    setItems(option === "Completed" ? filtered : all);
+  };
+
+  const isValid = useMemo(() => !!input, [input]); //y'a-t-il une valeur pour input ?
   return (
     <Container title="Gestionnaire de tâches">
       <Form ref={ref} onChange={handleOnChange} onSubmit={handleOnSubmit} />
-      <Filters />
+      <Filters onSelect={handleOnSelect} />
       <List items={items} onCheck={handleOnCheck} />
     </Container>
   );
