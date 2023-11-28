@@ -26,6 +26,11 @@ function reducer(state, action) {
         ...state, //on copie l'état
         items: [...state.items, action.payload.item], //puis on màj items, pour cela on copie leur état, puis on rajoute un élément transmis en tant que payload
       };
+    case "change": //dans le cas de l'action change
+      return {
+        ...state,
+        input: action.payload.value, //input correspond à value = e.target.value
+      };
   }
 }
 
@@ -141,7 +146,8 @@ function App() {
   const [all, setAll] = useState(items);
 
   //Fonctions de changement d'état
-  const handleOnChange = (e) => setInput(e.target.value);
+  const handleOnChange = (e) =>
+    dispatch({ type: "change", payload: { value: e.target.value } });
   const handleOnSubmit = (e) => {
     //quand le formulaire est éxécuté ...
     e.preventDefault(); //On ne réactualise pas l'appli
@@ -151,9 +157,15 @@ function App() {
     }*/
     //s'il y a une valeur pour l'input
     if (isValid) {
+      dispatch({
+        type: "submit",
+        payload: { item: { id: uuid(), content: state.input, done: false } },
+      });
+      /*
       setItems([{ id: uuid(), content: input, done: false }, ...items]); // le nouvel objet sera en haut de la liste, son id est généré par uuid, son contenu est celui de l'input et done est false par défaut
-      setAll([{ id: uuid(), content: input, done: false }, ...items]);
+      setAll([{ id: uuid(), content: input, done: false }, ...items]); 
       setInput(null); //le formulaire est vidé après envoi
+      */
       ref.current.value = null; //supprime la valeur après l'envoi du formulaire
     }
   };
@@ -172,12 +184,15 @@ function App() {
     setItems(option === "Completed" ? filtered : all);
   };
 
-  const isValid = useMemo(() => !!input, [input]); //y'a-t-il une valeur pour input ?
+  const isValid = useMemo(() => {
+    //y'a-t-il une valeur pour input ?
+    return !!state.input;
+  }, [state.input]); //les actions étant distribuées par useReducer, il faut référencer le state.input
   return (
     <Container title="Gestionnaire de tâches">
       <Form ref={ref} onChange={handleOnChange} onSubmit={handleOnSubmit} />
       <Filters onSelect={handleOnSelect} />
-      <List items={items} onCheck={handleOnCheck} />
+      <List items={state.items} onCheck={handleOnCheck} />
     </Container>
   );
 }
