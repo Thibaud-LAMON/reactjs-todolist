@@ -1,9 +1,33 @@
 import "bootstrap/dist/css/bootstrap.css";
 //npm install bootstrap
-import { useState, useRef, useMemo, forwardRef } from "react";
+import { useState, useRef, useMemo, forwardRef, useReducer } from "react";
 import "./App.css";
 import { v4 as uuid } from "uuid";
 //on a installé uuid qui génère une suite de chiffres et lettres pour créer un id unique
+
+//on définit un état initial
+const initialState = {
+  items:
+    ({ id: 1, content: "pay bills", done: true },
+    { id: 2, content: "learn React", done: false }), //pour les résultats filtrés
+  all:
+    ({ id: 1, content: "pay bills", done: true },
+    { id: 2, content: "learn React", done: false }), //pour la liste complête
+  input: null,
+};
+
+//on définit une fonction Reducer. 2 params retournés : state et action(suite à l'action de distribuer)
+//on y met toute la logique pour s'occuper de la gestion d'état de façon isolée et séparée.
+function reducer(state, action) {
+  //switch pour faire du contrôle de flux
+  switch (action.type) {
+    case "submit": //dans le cas de l'action submit
+      return {
+        ...state, //on copie l'état
+        items: [...state.items, action.payload.item], //puis on màj items, pour cela on copie leur état, puis on rajoute un élément transmis en tant que payload
+      };
+  }
+}
 
 const Container = ({ children, title }) => {
   return (
@@ -104,6 +128,9 @@ function List({ items, onCheck }) {
 }
 
 function App() {
+  //useReducer renvoie des valeurs sous forme de tableau
+  //le tableau retourne l'état et un dispatch qui distribue les actions
+  const [state, dispatch] = useReducer(reducer, initialState); //2 args: reducer = fonction qui fait les calculs des nouveaux states, initialState = valeur initalle
   const ref = useRef(); //on créer une ref pour accéder au noeud du DOM
   const [input, setInput] = useState(null); //cet état sert a récupérer la valeur du formulaire
   const [items, setItems] = useState([
