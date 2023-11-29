@@ -7,12 +7,14 @@ import { v4 as uuid } from "uuid";
 
 //on définit un état initial
 const initialState = {
-  items:
-    ({ id: 1, content: "pay bills", done: true },
-    { id: 2, content: "learn React", done: false }), //pour les résultats filtrés
-  all:
-    ({ id: 1, content: "pay bills", done: true },
-    { id: 2, content: "learn React", done: false }), //pour la liste complête
+  items: [
+    { id: 1, content: "pay bills", done: true },
+    { id: 2, content: "learn React", done: false },
+  ], //pour les résultats filtrés
+  all: [
+    { id: 1, content: "pay bills", done: true },
+    { id: 2, content: "learn React", done: false },
+  ], //pour la liste complête
   input: null,
 };
 
@@ -31,6 +33,27 @@ function reducer(state, action) {
         ...state,
         input: action.payload.value, //input correspond à value = e.target.value
       };
+    case "check": //dans le cas de l'action check
+      const updated = state.items.map((item) =>
+        item.id === action.payload.id
+          ? { ...item, done: action.payload.bool }
+          : item
+      );
+      //Pour chaque élément on retourne un tableau avec les éléments transformés.
+      //On compare l'id de l'item avec l'id transmit en paramètre, si oui la valeur booléenne est mise à jour, sinon on renvoi l'item
+      return {
+        ...state,
+        items: updated, //remplace setItems dans handleOnCheck
+        all: updated, //remplace setAll dans handleOnCheck
+      };
+    case "select": //dans le cas de l'action select
+      const filtered = state.items.filter((item) => !!item.done); //renvoie les item qui ont le statut done
+      return {
+        ...state,
+        items: action.payload.option === "Completed" ? filtered : state.all, //remplace setItems dans handleOnSelect
+      };
+    default:
+      throw new Error();
   }
 }
 
@@ -137,13 +160,6 @@ function App() {
   //le tableau retourne l'état et un dispatch qui distribue les actions
   const [state, dispatch] = useReducer(reducer, initialState); //2 args: reducer = fonction qui fait les calculs des nouveaux states, initialState = valeur initalle
   const ref = useRef(); //on créer une ref pour accéder au noeud du DOM
-  const [input, setInput] = useState(null); //cet état sert a récupérer la valeur du formulaire
-  const [items, setItems] = useState([
-    //setItems permet de mettre à jour la liste
-    { id: 1, content: "pay bills", done: false },
-    { id: 2, content: "learn React", done: false },
-  ]);
-  const [all, setAll] = useState(items);
 
   //Fonctions de changement d'état
   const handleOnChange = (e) =>
@@ -171,17 +187,16 @@ function App() {
   };
   const handleOnCheck = (id, bool) => {
     //n'aura lieu qu'en cas de case cochée
-    const updated = items.map((item) =>
-      item.id === id ? { ...item, done: bool } : item
-    );
-    //Pour chaque élément on retourne un tableau avec les éléments transformés.
-    //On compare l'id de l'item avec l'id transmit en paramètre, si oui la valeur booléenne est mise à jour, sinon on renvoi l'item
-    setItems(updated);
-    setAll(updated);
+    dispatch({
+      type: "check",
+      payload: { id, bool },
+    });
   };
   const handleOnSelect = (option) => {
-    const filtered = items.filter((item) => !!item.done); //renvoie les item qui ont le statut done
-    setItems(option === "Completed" ? filtered : all);
+    dispatch({
+      type: "select",
+      payload: { option },
+    });
   };
 
   const isValid = useMemo(() => {
