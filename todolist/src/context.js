@@ -65,6 +65,8 @@ const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState); //2 args: reducer = fonction qui fait les calculs des nouveaux states, initialState = valeur initalle
   //le useReducer est également déplacé
   //il retourne sous forme de tableau le state et le dispatch et on le transmet comme value au Provider
-  return <Provider value={{}}>{children}</Provider>; //Tout composant encapsulé par Provider est un enfant et aura accès aux valeurs globales
+  return <Provider value={{ state, dispatch }}>{children}</Provider>; //Tout composant encapsulé par Provider est un enfant et aura accès aux valeurs globales
   //unique prop -> value
 };
+
+export default AppProvider; //permet d'envelopper le composant principal de l'appli
