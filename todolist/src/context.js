@@ -27,6 +27,8 @@ function reducer(state, action) {
       return {
         ...state, //on copie l'état
         items: [...state.items, action.payload.item], //puis on màj items, pour cela on copie leur état, puis on rajoute un élément transmis en tant que payload
+        all: [...state.items, action.payload.item],
+        input: null,
       };
     case "change": //dans le cas de l'action change
       return {
@@ -67,6 +69,14 @@ const AppProvider = ({ children }) => {
   //il retourne sous forme de tableau le state et le dispatch et on le transmet comme value au Provider
   return <Provider value={{ state, dispatch }}>{children}</Provider>; //Tout composant encapsulé par Provider est un enfant et aura accès aux valeurs globales
   //unique prop -> value
+};
+
+//prend en paramètre Component, on permet aussi la transmission de props
+export const withContext = (Component) => (props) => {
+  //Consumer est un composant récupéré à partir de l'objet Context
+  //il retourne dans la value (valeur de l'objet Context) dans sa fonction de rappel
+  //on transmet ensuite les infos de value au Component
+  return <Consumer>{(value) => <Component {...value} {...props} />}</Consumer>; //on transmet les données de value et -s'il y en a- de props, que l'on déstructure
 };
 
 export default AppProvider; //permet d'envelopper le composant principal de l'appli
