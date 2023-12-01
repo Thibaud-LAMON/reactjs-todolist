@@ -1,5 +1,5 @@
 //On commence par créer context.js
-import { createContext, useReducer } from "react"; //on importe createContext
+import { createContext, useContext, useReducer } from "react"; //on importe createContext
 
 const Context = createContext(); //on le récupère
 const { Provider, Consumer } = Context; //Context donne accès à Provider et Consumer
@@ -77,6 +77,12 @@ export const withContext = (Component) => (props) => {
   //il retourne dans la value (valeur de l'objet Context) dans sa fonction de rappel
   //on transmet ensuite les infos de value au Component
   return <Consumer>{(value) => <Component {...value} {...props} />}</Consumer>; //on transmet les données de value et -s'il y en a- de props, que l'on déstructure
+};
+
+//syntaxe : fonction fléchée
+//Son rôle sera de retourner les valeurs du Context retournées à partir de useContext
+export const useAppContext = () => {
+  return useContext(Context); //retourne un useContext avec les valeur du contexte
 };
 
 export default AppProvider; //permet d'envelopper le composant principal de l'appli
